@@ -305,8 +305,69 @@ namespace SecurityLibrary
         /// <returns>Plain text</returns>
         public string AnalyseUsingCharFrequency(string cipher)
         {
-            throw new NotImplementedException();
-            //key
+            //throw new NotImplementedException();
+            cipher = cipher.ToLower();
+            string aplha = "abcdefghijklmnopqrstuvwxyz";
+            StringBuilder Result = new StringBuilder();
+            char[] key = new char[26];
+            Dictionary<char, float> fixed_freq_dict = new Dictionary<char, float>();
+            Dictionary<char, float> characterCount = new Dictionary<char, float>();
+
+            fixed_freq_dict.Add('e', 12.51f);
+            fixed_freq_dict.Add('t', 9.25f);
+            fixed_freq_dict.Add('a', 8.04f);
+            fixed_freq_dict.Add('o', 7.60f);
+            fixed_freq_dict.Add('i', 7.26f);
+            fixed_freq_dict.Add('n', 7.09f);
+            fixed_freq_dict.Add('s', 6.54f);
+            fixed_freq_dict.Add('r', 6.12f);
+            fixed_freq_dict.Add('h', 5.49f);
+            fixed_freq_dict.Add('l', 4.14f);
+            fixed_freq_dict.Add('d', 3.99f);
+            fixed_freq_dict.Add('c', 3.06f);
+            fixed_freq_dict.Add('u', 2.71f);
+            fixed_freq_dict.Add('m', 2.53f);
+            fixed_freq_dict.Add('f', 2.30f);
+            fixed_freq_dict.Add('p', 2.00f);
+            fixed_freq_dict.Add('g', 1.96f);
+            fixed_freq_dict.Add('w', 1.92f);
+            fixed_freq_dict.Add('y', 1.73f);
+            fixed_freq_dict.Add('b', 1.54f);
+            fixed_freq_dict.Add('v', 0.99f);
+            fixed_freq_dict.Add('k', 0.67f);
+            fixed_freq_dict.Add('x', 0.19f);
+            fixed_freq_dict.Add('j', 0.16f);
+            fixed_freq_dict.Add('q', 0.11f);
+            fixed_freq_dict.Add('z', 0.09f);
+            
+            foreach (var c in cipher)
+            {
+                if (characterCount.ContainsKey(c))
+                    characterCount[c]++;
+                else
+                    characterCount[c] = 1;
+            }
+            foreach(char i in characterCount.Keys.ToList())
+            {
+                characterCount[i] /= cipher.Length;
+                characterCount[i] *= 100f;
+            }
+            // List of values kber --> so8yar 
+            var fixed_freq_keys = fixed_freq_dict.Keys.ToList();
+            //var sortedDict = (from entry in characterCount orderby entry.Value descending select entry);
+            var sortedDict = characterCount.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value).Keys.ToList();
+         
+            for(int i = 0; i<26;i++)
+            {
+                int postion = aplha.IndexOf(fixed_freq_keys[i]);
+                key[postion] = sortedDict[i];
+
+            }
+            string keeeyyy = new string(key);
+
+
+
+            return Decrypt(cipher,keeeyyy);
         }
     }
 }
