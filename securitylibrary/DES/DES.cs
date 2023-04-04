@@ -170,5 +170,34 @@ namespace SecurityLibrary.DES
         {
             throw new NotImplementedException();
         }
+
+        private string ShiftLeft(string str, int ShiftingFactor)
+        {
+            int n = str.Length;
+            string shifted_str = str;
+		    ShiftingFactor = ShiftingFactor % n;        
+            
+            for (int i = 0 ; i<n ; i++)
+            {
+                int new_index = ((i - ShiftingFactor) + n) % n;
+                shifted_str = shifted_str.Remove(new_index, 1).Insert(new_index, str[i].ToString());
+            }
+
+            return shifted_str;
+        }
+
+        private string Permutation(string str, List<int> PC)
+        {
+            int n = PC.Count;
+            string PermutationString = "";
+
+            for (int i = 0 ; i<n ; i++)
+            {
+                int new_index = PC[i] - 1;
+                PermutationString += str[new_index];
+            }
+
+            return PermutationString;
+        }
     }
 }
