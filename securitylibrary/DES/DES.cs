@@ -189,12 +189,12 @@ namespace SecurityLibrary.DES
             }
 
 
-            throw new NotImplementedException();
+            return "";
         }
 
         public override string Encrypt(string plainText, string key)
         {
-            throw new NotImplementedException();
+            return Sbox("101010", 1);
         }
 
         private string ShiftLeft(string str, int ShiftingFactor)
@@ -254,6 +254,53 @@ namespace SecurityLibrary.DES
             return binary;
         }
 
+        private string convertbinaryToDecimal(string binary)
+        {
+            int Dec = 0;
+            char[] binarydig = binary.ToCharArray(); 
+            Array.Reverse(binarydig);
+
+            for (int i = 0; i < binarydig.Length; i++)
+            {
+                if (binarydig[i] == '1')
+                {
+                    if (i == 0){
+                        Dec += 1;
+                    }
+                    else{
+                        Dec += (int)Math.Pow(2, i);
+                    }
+                }
+
+            }
+            return Dec.ToString();
+        }
+        private string convertDecimalTobinary(string dec)
+        {
+            string binary= string.Empty;
+            int decNum = int.Parse(dec);
+            int remain = 0;
+      
+            while (decNum > 0)
+            {
+                remain = decNum % 2;
+                decNum /= 2;
+                binary = remain.ToString() + binary;
+            }
+            return binary;
+        }
+
+     
+        private string Sbox(string b , int i)
+        {
+            // int B = int.Parse(b);
+            string B_of_row = String.Concat(b[0],b[b.Length - 1]); ///10
+            string b_ofCol = b.Substring(1, 4);
+            int row = int.Parse(convertbinaryToDecimal(B_of_row));
+            int col = int.Parse(convertbinaryToDecimal(b_ofCol));
+            int S_ofB = sBoxes[i][row , col];
+            return convertDecimalTobinary(S_ofB.ToString());
+        }
         private IEnumerable<string> keyGenerator(string baseKey)
         {
             string binaryBaseKey = convertHexaToBinary(baseKey);
