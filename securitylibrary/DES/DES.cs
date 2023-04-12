@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SecurityLibrary.DES
 {
@@ -11,7 +9,6 @@ namespace SecurityLibrary.DES
     /// </summary>
     public class DES : CryptographicTechnique
     {
-
         List<int> numShiftLeft = new List<int>() { 1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1 };
         List<int> PC1 = new List<int>()
         {
@@ -161,113 +158,23 @@ namespace SecurityLibrary.DES
           33,  1, 41,  9, 49, 17, 57, 25
         };
 
-        public override string Decrypt(string cipherText, string key)
-        {
-
-            // alternative way to create and use the key generation manually
-            // method 2 is recommended
-            //
-            // create the generator
-            //var generator = keyGenerator(key).GetEnumerator();
-            //
-            // move to the next item (first item)
-            //generator.MoveNext();
-            //
-            // use the item
-            //string currentKey = generator.Current;
-            //
-            // move to the next item
-            //generator.MoveNext();
-
-            
-            // method 2
-            // loop through all keys in the key generator one at a time
-            foreach (string roundKey in keyGenerator(key))
-            {
-                // use the key
-                Console.WriteLine(roundKey);
-            }
-
-
-            return "";
-        }
-
-        public override string Encrypt(string plainText, string key)
-        {
-            return Sbox("101010", 1);
-        }
-
-        private string ShiftLeft(string str, int ShiftingFactor)
-        {
-            int n = str.Length;
-            string shifted_str = str;
-            ShiftingFactor = ShiftingFactor % n;
-
-            for (int i = 0; i < n; i++)
-            {
-                int new_index = ((i - ShiftingFactor) + n) % n;
-                shifted_str = shifted_str.Remove(new_index, 1).Insert(new_index, str[i].ToString());
-            }
-
-            return shifted_str;
-        }
-
-        private string Permutation(string str, List<int> PC)
-        {
-            int n = PC.Count;
-            string PermutationString = "";
-
-            for (int i = 0; i < n; i++)
-            {
-                int new_index = PC[i] - 1;
-                PermutationString += str[new_index];
-            }
-
-            return PermutationString;
-        }
-
-        private string xoring(string a, string b, int len)
-        {
-            string ans = "";
-
-            for (int i = 0; i < len; i++)
-            {
-                if (a[i] == b[i])
-                    ans += "0";
-                else
-                    ans += "1";
-            }
-            return ans;
-        }
-
-        private string convertHexaToBinary(string hexa)
-        {
-
-            hexa = hexa.Substring(2, hexa.Length - 2);
-
-            string binary = String.Join(String.Empty,
-              hexa.Select(
-                c => Convert.ToString(Convert.ToInt32(c.ToString(), 16), 2).PadLeft(4, '0')
-              )
-            );
-
-            return binary;
-        }
 
         private string convertbinaryToDecimal(string binary)
         {
             int Dec = 0;
-            char[] binarydig = binary.ToCharArray(); 
+            char[] binarydig = binary.ToCharArray();
             Array.Reverse(binarydig);
 
             for (int i = 0; i < binarydig.Length; i++)
             {
                 if (binarydig[i] == '1')
                 {
-                    if (i == 0){
+                    if (i == 0)
+                    {
                         Dec += 1;
                     }
-                    else{
+                    else
+                    {
                         Dec += (int)Math.Pow(2, i);
                     }
                 }
@@ -277,10 +184,10 @@ namespace SecurityLibrary.DES
         }
         private string convertDecimalTobinary(string dec)
         {
-            string binary= string.Empty;
+            string binary = string.Empty;
             int decNum = int.Parse(dec);
             int remain = 0;
-      
+
             while (decNum > 0)
             {
                 remain = decNum % 2;
@@ -290,19 +197,23 @@ namespace SecurityLibrary.DES
             return binary;
         }
 
-     
-        private string Sbox(string b , int i)
+
+        private string Sbox(string b, int i)
         {
-            // int B = int.Parse(b);
-            string B_of_row = String.Concat(b[0],b[b.Length - 1]); ///10
+
+            string B_of_row = String.Concat(b[0], b[b.Length - 1]); ///10
             string b_ofCol = b.Substring(1, 4);
             int row = int.Parse(convertbinaryToDecimal(B_of_row));
             int col = int.Parse(convertbinaryToDecimal(b_ofCol));
-            int S_ofB = sBoxes[i][row , col];
+            int S_ofB = sBoxes[i][row, col];
+
             return convertDecimalTobinary(S_ofB.ToString());
         }
+        
+
         private IEnumerable<string> keyGenerator(string baseKey)
         {
+
             string binaryBaseKey = convertHexaToBinary(baseKey);
             string permutatedBaseKey = Permutation(binaryBaseKey, PC1);
 
@@ -321,9 +232,163 @@ namespace SecurityLibrary.DES
 
                 thisRoundKey = Permutation(thisRoundKey, PC2);
 
-                yield return thisRoundKey;
 
+                yield return thisRoundKey;
             }
+
+        }
+        public override string Encrypt(string plainText, string key)
+        {
+            // hexadecimal to binary
+            string PTBinary = convertHexaToBinary(plainText);
+            string PTPerm = Permutation(PTBinary, IP);
+            List<string> rKey = new List<string>();
+            int num = 32;
+            string LeftPart = PTPerm.Substring(0, num);
+            string RightPart = PTPerm.Substring(num, num);
+
+            foreach (string roundKey in keyGenerator(key))
+            {
+                // use the key
+                rKey.Add(roundKey);
+            }
+            int rr = 16;
+            for (int r = 0; r < rr; r++)
+            {
+                string Expansion = Permutation(RightPart, E);
+
+                string XoredResult = xoring(rKey[r], Expansion);//48
+                string SBresult = " ";
+
+                int ss = 8;
+                IEnumerable<string> Chunks = Split(XoredResult, 6);
+
+                var item = Chunks.ElementAt(0);
+                for (int s = 0; s < 8; s++)
+                {
+
+                    SBresult += Sbox(Chunks.ElementAt(s), s).PadLeft(4, '0');
+
+                }
+
+                string ExpandedPerm = Permutation(SBresult, P);
+
+                LeftPart = xoring(LeftPart, ExpandedPerm);
+
+                shuffle(ref LeftPart, ref RightPart);
+            }
+
+            shuffle(ref LeftPart, ref RightPart);
+            plainText = LeftPart + RightPart;
+            string final = Permutation(plainText, IPinverse);
+            string encryptedtxt = "0x" + Convert.ToInt64(final, 2).ToString("x").PadLeft(16, '0');
+            return encryptedtxt;
+
+        }
+     
+        public override string Decrypt(string cipherText, string key)
+        {
+
+            // alternative way to create and use the key generation manually
+            // method 2 is recommended
+            //
+            // create the generator
+            //var generator = keyGenerator(key).GetEnumerator();
+            //
+            // move to the next item (first item)
+            //generator.MoveNext();
+            //
+            // use the item
+            //string currentKey = generator.Current;
+            //
+            // move to the next item
+            //generator.MoveNext();
+
+
+            // method 2
+            // loop through all keys in the key generator one at a time
+            foreach (string roundKey in keyGenerator(key))
+            {
+                // use the key
+                Console.WriteLine(roundKey);
+            }
+
+
+            return "";
+        }
+
+        private string Permutation(string str, List<int> PC)
+        {
+            int n = PC.Count;
+            string PermutationString = "";
+
+            for (int i = 0; i < n; i++)
+            {
+                int new_index = PC[i] - 1;
+                PermutationString += str[new_index];
+            }
+
+            return PermutationString;
+        }
+       
+        public void shuffle(ref string x, ref string y)
+        {
+
+            string z;
+
+            z = x;
+
+            x = y;
+
+            y = z;
+
+        }
+        private string ShiftLeft(string str, int ShiftingFactor)
+        {
+            int n = str.Length;
+            string shifted_str = str;
+            ShiftingFactor = ShiftingFactor % n;
+
+            for (int i = 0; i < n; i++)
+            {
+                int new_index = ((i - ShiftingFactor) + n) % n;
+                shifted_str = shifted_str.Remove(new_index, 1).Insert(new_index, str[i].ToString());
+            }
+
+            return shifted_str;
+        }
+        private string xoring(string x, string y)
+        {
+            string value = "";
+            int len = x.Length;
+            for (int i = 0; i <len ; i++)
+            {
+                
+                if (x[i] == y[i])
+                    value += "0";
+                else
+                    value += "1";
+            }
+            return value;
+        }
+        private IEnumerable<string> Split(string str, int chunkSize)
+        {
+            return Enumerable.Range(0, str.Length / chunkSize)
+                .Select(i => str.Substring(i * chunkSize, chunkSize));
+        }
+
+        private string convertHexaToBinary(string hexa)
+        {
+
+            hexa = hexa.Substring(2, hexa.Length - 2);
+
+            string binary = String.Join(String.Empty,
+              hexa.Select(
+                c => Convert.ToString(Convert.ToInt32(c.ToString(), 16), 2).PadLeft(4, '0')
+              )
+            );
+
+            return binary;
         }
     }
 }
