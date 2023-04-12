@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,12 +13,23 @@ namespace SecurityLibrary.DES
     {
         public string Decrypt(string cipherText, List<string> key)
         {
-            throw new NotImplementedException();
+            DES des = new DES();
+            string plainText;
+            plainText = des.Decrypt(cipherText, key[0]);
+            plainText = des.Encrypt(plainText, key[1]);
+            plainText = des.Decrypt(plainText, key[0]);
+            return plainText;
+
         }
 
         public string Encrypt(string plainText, List<string> key)
         {
-            throw new NotImplementedException();
+            DES des = new DES();
+            string cipherText;
+            cipherText = des.Encrypt(plainText, key[0]);
+            cipherText = des.Decrypt(cipherText, key[1]);
+            cipherText = des.Encrypt(cipherText, key[0]);
+            return cipherText;
         }
 
         public List<string> Analyse(string plainText,string cipherText)
