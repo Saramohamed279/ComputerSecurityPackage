@@ -258,7 +258,7 @@ namespace SecurityLibrary.DES
                 string Expansion = Permutation(RightPart, E);
 
                 string XoredResult = xoring(rKey[r], Expansion);//48
-                string SBresult = " ";
+                string SBresult = "";
 
                 int ss = 8;
                 IEnumerable<string> Chunks = Split(XoredResult, 6);
