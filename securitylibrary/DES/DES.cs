@@ -307,14 +307,56 @@ namespace SecurityLibrary.DES
 
             // method 2
             // loop through all keys in the key generator one at a time
+            //foreach (string roundKey in keyGenerator(key))
+            //{
+            //    // use the key
+            //    Console.WriteLine(roundKey);
+            //}
+
+            // hexadecimal to binary
+            string PTBinary = convertHexaToBinary(cipherText);
+            string PTPerm = Permutation(PTBinary, IP);
+            List<string> rKey = new List<string>();
+            int num = 32;
+            string LeftPart = PTPerm.Substring(0, num);
+            string RightPart = PTPerm.Substring(num, num);
+
             foreach (string roundKey in keyGenerator(key))
             {
                 // use the key
-                Console.WriteLine(roundKey);
+                rKey.Add(roundKey);
+            }
+            int rr = 16;
+            for (int r = 15; r >= 0; r--)
+            {
+                string Expansion = Permutation(RightPart, E);
+
+                string XoredResult = xoring(rKey[r], Expansion);//48
+                string SBresult = "";
+
+                int ss = 8;
+                IEnumerable<string> Chunks = Split(XoredResult, 6);
+
+                var item = Chunks.ElementAt(0);
+                for (int s = 0; s < 8; s++)
+                {
+
+                    SBresult += Sbox(Chunks.ElementAt(s), s).PadLeft(4, '0');
+
+                }
+
+                string ExpandedPerm = Permutation(SBresult, P);
+
+                LeftPart = xoring(LeftPart, ExpandedPerm);
+
+                shuffle(ref LeftPart, ref RightPart);
             }
 
-
-            return "";
+            shuffle(ref LeftPart, ref RightPart);
+            cipherText = LeftPart + RightPart;
+            string final = Permutation(cipherText, IPinverse);
+            string plainText = "0x" + Convert.ToInt64(final, 2).ToString("x").PadLeft(16, '0');
+            return plainText;
         }
 
         private string Permutation(string str, List<int> PC)
