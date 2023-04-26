@@ -58,6 +58,7 @@
     <Compile Include="MonoalphabeticTest.cs" />
     <Compile Include="CeaserTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RSATest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SecurityLibrary\SecurityLibrary.csproj">
