@@ -25,23 +25,40 @@ namespace SecurityLibrary.MD5
          */
         private static string convertHexaToBinary(string hexa)
         {
+            
             string binary = String.Join(String.Empty,
               hexa.Select(
                 c => Convert.ToString(Convert.ToInt32(c.ToString(), 16), 2).PadLeft(4, '0')
               )
             );
-
+            
             return binary;
         }
 
+        /*
         string A = convertHexaToBinary("67452301");
         string B = convertHexaToBinary("EFCDAB89");
         string C = convertHexaToBinary("98BADCFE");
         string D = convertHexaToBinary("10325478");
+        */
+
+        
+        string A = convertHexaToBinary("01234567");
+        string B = convertHexaToBinary("89abcdef");
+        string C = convertHexaToBinary("fedcba98");
+        string D = convertHexaToBinary("76543210");
+        
+
+        /*
+        string A = convertHexaToBinary("76543210");
+        string B = convertHexaToBinary("fedcba98");
+        string C = convertHexaToBinary("89abcdef");
+        string D = convertHexaToBinary("01234567");
+        */
 
         public string GetHash(string text)
         {
-
+            //text = "They are deterministic";
             text = convertStringToBinary(text);
             var splitText = splitInputInto512BitsBlock(text);
 
@@ -59,10 +76,10 @@ namespace SecurityLibrary.MD5
                     singleBlock(i, item);
                 }
 
-                A = Xor(A, local_a);
-                B = Xor(B, local_b);
-                C = Xor(C, local_c);
-                D = Xor(D, local_d);
+                A = Add(A, local_a);
+                B = Add(B, local_b);
+                C = Add(C, local_c);
+                D = Add(D, local_d);
 
             }
 
@@ -146,22 +163,36 @@ namespace SecurityLibrary.MD5
 
         private void singleStep(Func<string, string, string, string> fun, string msg, int i, int shiftAmount)
         {
-            var funcResult = fun(B,C,D);
+            string funcResult = fun(B,C,D);
 
-            var result = Xor(funcResult, A);
+            string result = Add(funcResult, A);
 
-            result = Xor(result, msg);
+            result = Add(result, msg);
 
-            result = Xor(result, T(i));
+            result = Add(result, T(i));
 
             result = circularShiftLeft(result, shiftAmount);
 
-            result = Xor(result, B);
+            result = Add(result, B);
 
             A = D;
             B = result;
             C = B;
             D = C;
+        }
+
+        private string Add(string x, string y)
+        {
+            long mod = (long)Math.Pow(2, 32);
+
+            long X = Convert.ToInt64(x , 2);
+            long Y = Convert.ToInt64(y , 2);
+
+            long result = (((X + Y) % mod) + mod) % mod;
+            
+            string ret = Convert.ToString(result, 2);
+
+            return ret;
         }
 
         //private Func<string, string, string, string> RoundFunction
@@ -188,8 +219,9 @@ namespace SecurityLibrary.MD5
 
             string stringResult = Convert.ToString(result, 16);
 
-            return convertHexaToBinary(stringResult);
+            string BinaryStringResult = convertHexaToBinary(stringResult);
 
+            return BinaryStringResult;
         }
 
         private string F(string b, string c, string d)
@@ -292,7 +324,7 @@ namespace SecurityLibrary.MD5
 
 
                 // calculate number of "0" to add
-                int lenZeros = 512 - 65 - blocks[blocks.Count - 1].Length;
+                int lenZeros = 512 - 64 - blocks[blocks.Count - 1].Length;
 
                 // add number of "0" 
                 for(int i = 0;i < lenZeros; i++)
