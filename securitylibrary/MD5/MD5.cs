@@ -8,7 +8,6 @@ namespace SecurityLibrary.MD5
 {
     public class MD5
     {
-
         /*
           steps
 
@@ -25,40 +24,35 @@ namespace SecurityLibrary.MD5
          */
         private static string convertHexaToBinary(string hexa)
         {
-            
             string binary = String.Join(String.Empty,
               hexa.Select(
                 c => Convert.ToString(Convert.ToInt32(c.ToString(), 16), 2).PadLeft(4, '0')
               )
             );
             
+            binary = binary.PadLeft(32, '0');
+            
             return binary;
         }
 
-        /*
+        
         string A = convertHexaToBinary("67452301");
         string B = convertHexaToBinary("EFCDAB89");
         string C = convertHexaToBinary("98BADCFE");
         string D = convertHexaToBinary("10325478");
-        */
-
         
+
+        /*
+        For Debugging
         string A = convertHexaToBinary("01234567");
         string B = convertHexaToBinary("89abcdef");
         string C = convertHexaToBinary("fedcba98");
         string D = convertHexaToBinary("76543210");
-        
-
-        /*
-        string A = convertHexaToBinary("76543210");
-        string B = convertHexaToBinary("fedcba98");
-        string C = convertHexaToBinary("89abcdef");
-        string D = convertHexaToBinary("01234567");
         */
 
         public string GetHash(string text)
         {
-            //text = "They are deterministic";
+            //text = "They are deterministic";   For Debugging
             text = convertStringToBinary(text);
             var splitText = splitInputInto512BitsBlock(text);
 
@@ -80,14 +74,12 @@ namespace SecurityLibrary.MD5
                 B = Add(B, local_b);
                 C = Add(C, local_c);
                 D = Add(D, local_d);
-
             }
 
             string hash = A + B + C + D;
             hash = BinaryStringToHexString(hash);
 
             return hash; 
-
         }
         public static string BinaryStringToHexString(string binary)
         {
@@ -175,10 +167,11 @@ namespace SecurityLibrary.MD5
 
             result = Add(result, B);
 
-            A = D;
-            B = result;
-            C = B;
+            string tmp = D;
             D = C;
+            C = B;
+            B = result;
+            A = tmp;
         }
 
         private string Add(string x, string y)
@@ -190,7 +183,7 @@ namespace SecurityLibrary.MD5
 
             long result = (((X + Y) % mod) + mod) % mod;
             
-            string ret = Convert.ToString(result, 2);
+            string ret = Convert.ToString(result, 2).PadLeft(32, '0');
 
             return ret;
         }
@@ -204,6 +197,7 @@ namespace SecurityLibrary.MD5
 
         private string circularShiftLeft(string s, int amount)
         {
+            amount %= s.Length;
             string shiftAmount = s.Substring(0, amount);
 
             s = s.Substring(amount);
